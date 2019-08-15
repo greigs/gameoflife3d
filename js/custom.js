@@ -3,7 +3,7 @@ function rand(min, max){
 };
 
 function toggleInfo(){
-    var infoWindow = document.getElementById('infowindow');
+    const infoWindow = document.getElementById('infowindow');
     if(!infoWindow.style.display || infoWindow.style.display == 'none'){
         infoWindow.style.display = 'block';
     }
@@ -13,51 +13,68 @@ function toggleInfo(){
 };
 
 function init(){
-    var fps = 10;
+    const fps = 10;
     var now;
     var then = Date.now();
-    var interval = 1000/fps;
+    const interval = 1000/fps;
     var delta; 
     var isplaying = true;
 
-    var stepcount = document.getElementById('count');
-    var toggleBtn = document.getElementById('toggle');
-    var stepBtn = document.getElementById('step'); 
-    var clearBtn = document.getElementById('clear'); 
-    var randomBtn = document.getElementById('random'); 
-
+    const stepcount = document.getElementById('count');
+    const toggleBtn = document.getElementById('toggle');
+    const stepBtn = document.getElementById('step'); 
+    const clearBtn = document.getElementById('clear'); 
+    const randomBtn = document.getElementById('random'); 
+    const adjacencyInfo = [{},{},{},{},{},{}]
+    const games = [];
 
     toggleBtn.addEventListener('mousedown', function(e){
         isplaying = !isplaying;
     });
     stepBtn.addEventListener('mousedown', function(e){
-        game.step();
-        stepcount.innerHTML = game.round;
+        games.forEach((game) => {
+            game.step();
+            if (!isplaying){
+                game.draw();
+            }  
+        })
+        stepcount.innerHTML = games[0].round;
     });
     clearBtn.addEventListener('mousedown', function(e){
-        isplaying = false;
-        game.clear();
-        game.round = 0;
-        stepcount.innerHTML = game.round;
+        isplaying = false;               
+        
+        games.forEach((game) => {
+            game.clear();
+            game.round = 0;    
+        })
+        stepcount.innerHTML = games[0].round;
     });
     randomBtn.addEventListener('mousedown', function(e){
         isplaying = false;
-        game.randomize();
-        game.round = 0;
-        stepcount.innerHTML = game.round;
+        games.forEach((game) => {
+            game.randomize();
+            game.round = 0;
+        })
+        stepcount.innerHTML = games[0].round;
     });
 
-    var canvas = document.getElementById('game');
-    var game = new Game(canvas, {
-        cellColor:'#00ffe5', 
-        cellsX:64, 
-        cellsY:64, 
-        cellSize:2, 
-        gridColor:'#FFFFFF', 
-        bgColor:'#050505'}
-        );
     
-    game.randomize();
+
+    for (let i=0; i< adjacencyInfo.length; i++){
+        const canvas = document.getElementById('game' + i);
+        const game = new Game(canvas, {
+            cellColor:'#00ffe5', 
+            cellsX:64, 
+            cellsY:64, 
+            cellSize:2, 
+            gridColor:'#FFFFFF', 
+            bgColor:'#050505'}
+            );
+        
+        game.randomize();
+    
+        games.push(game)
+    }
 
     renderer = new THREE.WebGLRenderer({ 
         antialias: true,
@@ -67,28 +84,34 @@ function init(){
 
     renderer.setClearColor( 0x000000, 0 ); 
 
-    stepcount.innerHTML = game.round;
+    stepcount.innerHTML = games[0].round;
     
-    var domEl = document.getElementById('threecontainer');
+    const domEl = document.getElementById('threecontainer');
 
     renderer.setSize(domEl.offsetWidth, domEl.offsetHeight);
 
     domEl.appendChild(renderer.domElement);
 
-    var camera = new THREE.PerspectiveCamera( 55, domEl.offsetWidth / domEl.offsetHeight, 0.01, 400 ); 
-    var scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera( 55, domEl.offsetWidth / domEl.offsetHeight, 0.01, 400 ); 
+    const scene = new THREE.Scene();
 
-    var texture = new THREE.Texture(canvas);
-    var cubegeometry = new THREE.BoxGeometry(70,70,70);
-    var cubematerial = new THREE.MeshLambertMaterial({
-        color:0xFFFFFF,
-        map:texture
-    });
-
-    var cube = new THREE.Mesh(cubegeometry, cubematerial);
+    const cubeMaterials = []
+    const textures = []
+    for (let i=0; i< adjacencyInfo.length; i++){
+        const canvas = document.getElementById('game' + i);
+        const texture = new THREE.Texture(canvas);
+        textures.push(texture)
+        const cubematerial = new THREE.MeshLambertMaterial({
+            color:0xFFFFFF,
+            map:texture
+        });
+        cubeMaterials.push(cubematerial)
+    }
+    const cubegeometry = new THREE.BoxGeometry(70,70,70);
+    var cube = new THREE.Mesh(cubegeometry, cubeMaterials);
    
-    var ambientlight = new THREE.AmbientLight(0x404040, 2);
-    var light = new THREE.PointLight( 0xffffff, 2 );
+    const ambientlight = new THREE.AmbientLight(0x404040, 2);
+    const light = new THREE.PointLight( 0xffffff, 2 );
    // light.castShadow = true;
     light.position.set(45,90,140);
     
@@ -100,11 +123,11 @@ function init(){
 
     renderScene = new THREE.RenderPass(scene, camera);
 
-    var bloomStrength = 2;
-    var bloomRadius = 0.8;
-    var bloomThreshold = 0.3;
+    const bloomStrength = 2;
+    const bloomRadius = 0.8;
+    const bloomThreshold = 0.3;
     
-	var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), bloomStrength, bloomRadius, bloomThreshold);
+	const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), bloomStrength, bloomRadius, bloomThreshold);
     composer = new THREE.EffectComposer(renderer);
     composer.setSize(window.innerWidth, window.innerHeight);
     composer.addPass(renderScene);
@@ -116,8 +139,12 @@ function init(){
     controls.enableZoom = true;
     controls.autoRotate = false;
   
-    var animate = function(){
-        texture.needsUpdate = true;
+    const animate = function(){
+
+        textures.forEach((texture) => {
+            texture.needsUpdate = true;
+        })
+        
         frameID = requestAnimationFrame( animate );
         now = Date.now();
         delta = now - then;
@@ -130,9 +157,14 @@ function init(){
         if (delta > interval) {
             
             if (isplaying){
-                game.step();
+
+                games.forEach((game) => {
+                    game.step();
+                    game.draw();         
+                })
+
                 toggleBtn.innerHTML = 'Stop';
-                stepcount.innerHTML = game.round;
+                stepcount.innerHTML = games[0].round;
                 
             }
             else{

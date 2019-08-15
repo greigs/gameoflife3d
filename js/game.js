@@ -14,8 +14,8 @@ function Game(canvas, cfg) {
 		cellsY    : 64,
 		cellSize  : 10,
 		gridColor : "#ddd",
-    cellColor : "#000000",
-    bgColor: "#FFFFFF"
+    	cellColor : "#000000",
+    	bgColor   : "#FFFFFF"
 	};
     // this.cfg = defaults;//$.extend({}, defaults, cfg);
     this.cfg = Object.assign(defaults, cfg || {});
@@ -36,11 +36,9 @@ Game.prototype = {
 		for (var x = 0; x < this.matrix.length; x++) {
 			this.matrix[x] = new Array(this.cfg.cellsY);
 			for (var y = 0; y < this.matrix[x].length; y++) {
-				this.matrix[x][y] = false;
+				this.matrix[x][y] = 0;
 			}
 		}
-		
-		this.draw();
 	},
 	
 	draw: function() {
@@ -70,7 +68,7 @@ Game.prototype = {
         this.ctx.fillStyle = this.cfg.cellColor;
 		for (x = 0; x < this.matrix.length; x++) {
 			for (y = 0; y < this.matrix[x].length; y++) {
-				if (this.matrix[x][y]) {
+				if (this.matrix[x][y] > 0) {
 					this.ctx.fillRect(x * this.cfg.cellSize + 1,
 					                  y * this.cfg.cellSize + 1,
 									  this.cfg.cellSize - 1,
@@ -95,14 +93,18 @@ Game.prototype = {
 				var neighbours = this.countNeighbours(x, y);
 				
 				// use rules
-				if (this.matrix[x][y]) {
+				if (this.matrix[x][y] > 0) {
 					if (neighbours == 2 || neighbours == 3)
-						buffer[x][y] = true;
-					if (neighbours < 2 || neighbours > 3)
-						buffer[x][y] = false;
+					{
+						buffer[x][y] = this.matrix[x][y] + 1;
+					}
+					else if (neighbours < 2 || neighbours > 3)
+					{
+						buffer[x][y] = 0;
+					}
 				} else {
 					if (neighbours == 3)
-						buffer[x][y] = true;
+						buffer[x][y] = 1;
 				}
 			}
 		}
@@ -110,7 +112,6 @@ Game.prototype = {
 		// flip buffers
 		this.matrix = buffer;
 		this.round++;
-		this.draw();
 	},
 	
 	countNeighbours: function(cx, cy) {
@@ -122,7 +123,7 @@ Game.prototype = {
 					continue;
 				if (x < 0 || x >= this.matrix.length || y < 0 || y >= this.matrix[x].length)
 					continue;
-				if (this.matrix[x][y])
+				if (this.matrix[x][y] > 0)
 					count++;
 			}
 		}
@@ -133,7 +134,7 @@ Game.prototype = {
 	clear: function() {
 		for (var x = 0; x < this.matrix.length; x++) {
 			for (var y = 0; y < this.matrix[x].length; y++) {
-				this.matrix[x][y] = false;
+				this.matrix[x][y] = 0;
 			}
 		}
 		
@@ -143,17 +144,10 @@ Game.prototype = {
 	randomize: function() {
 		for (var x = 0; x < this.matrix.length; x++) {
 			for (var y = 0; y < this.matrix[x].length; y++) {
-				this.matrix[x][y] = Math.random() < 0.3;
+				this.matrix[x][y] = Math.random() < 0.3 ? 1 : 0;
 			}
 		}
 		
 		this.draw();
-	},
-	
-	toggleCell: function(cx, cy) {
-		if (cx >= 0 && cx < this.matrix.length && cy >= 0 && cy < this.matrix[0].length) {
-			this.matrix[cx][cy] = !this.matrix[cx][cy];
-			this.draw();
-		}
-	}
+	}	
 };
