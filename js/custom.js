@@ -26,36 +26,36 @@ function init(){
     const clearBtn = document.getElementById('clear'); 
     const randomBtn = document.getElementById('random'); 
     const adjacencyInfo = [{},{},{},{},{},{}]
-    const games = [];
+    window.games = [];
 
     toggleBtn.addEventListener('mousedown', function(e){
         isplaying = !isplaying;
     });
     stepBtn.addEventListener('mousedown', function(e){
-        games.forEach((game) => {
+        window.games.forEach((game) => {
             game.step();
             if (!isplaying){
                 game.draw();
             }  
         })
-        stepcount.innerHTML = games[0].round;
+        stepcount.innerHTML = window.games && window.games[0].round;
     });
     clearBtn.addEventListener('mousedown', function(e){
         isplaying = false;               
         
-        games.forEach((game) => {
+        window.games.forEach((game) => {
             game.clear();
             game.round = 0;    
         })
-        stepcount.innerHTML = games[0].round;
+        stepcount.innerHTML =  window.games && window.games[0].round;
     });
     randomBtn.addEventListener('mousedown', function(e){
         isplaying = false;
-        games.forEach((game) => {
+        window.games.forEach((game) => {
             game.randomize();
             game.round = 0;
         })
-        stepcount.innerHTML = games[0].round;
+        stepcount.innerHTML =  window.games && window.games[0].round;
     });
 
     
@@ -64,8 +64,8 @@ function init(){
         const canvas = document.getElementById('game' + i);
         const game = new Game(canvas, {
             cellColor:'#00ffe5', 
-            cellsX:64, 
-            cellsY:64, 
+            cellsX:32, 
+            cellsY:32, 
             cellSize:2, 
             gridColor:'#FFFFFF', 
             bgColor:'#050505'}
@@ -73,7 +73,7 @@ function init(){
         
         game.randomize();
     
-        games.push(game)
+        //window.games.push(game)
     }
 
     renderer = new THREE.WebGLRenderer({ 
@@ -84,7 +84,7 @@ function init(){
 
     renderer.setClearColor( 0x000000, 0 ); 
 
-    stepcount.innerHTML = games[0].round;
+    stepcount.innerHTML =  window.games && window.games.length > 0 && window.games[0].round;
     
     const domEl = document.getElementById('threecontainer');
 
@@ -115,7 +115,7 @@ function init(){
    // light.castShadow = true;
     light.position.set(45,90,140);
     
-    camera.position.set(0,0,140);
+    camera.position.set(120,120,120);
     scene.add(cube);
     scene.add(light);
     scene.add(ambientlight);
@@ -123,7 +123,7 @@ function init(){
 
     renderScene = new THREE.RenderPass(scene, camera);
 
-    const bloomStrength = 2;
+    const bloomStrength = 0;
     const bloomRadius = 0.8;
     const bloomThreshold = 0.3;
     
@@ -151,20 +151,20 @@ function init(){
 
         composer.render();
         //renderer.render( scene, camera );
-        cube.rotation.x += .003;
-        cube.rotation.y -= .003;
-        cube.rotation.z += .001;
+        //cube.rotation.x += .003;
+        //cube.rotation.y -= .003;
+        //cube.rotation.z += .001;
         if (delta > interval) {
             
             if (isplaying){
 
-                games.forEach((game) => {
+                window.games.forEach((game) => {
                     game.step();
                     game.draw();         
                 })
 
                 toggleBtn.innerHTML = 'Stop';
-                stepcount.innerHTML = games[0].round;
+                stepcount.innerHTML = window.games && window.games.length > 0 && window.games[0].round;
                 
             }
             else{
@@ -179,4 +179,4 @@ function init(){
 
 };
 
-window.onload = init;
+

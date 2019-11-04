@@ -1,7 +1,23 @@
-<html><head>
-	<title>PICO-8 Cartridge</title>
-	<meta name="viewport" content="width=device-width">
-	<script type="text/javascript">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>smart-sign.com Game of Life in webGL / threejs</title>
+    <link rel="stylesheet" href="css/styles.css"/>
+    <script src="lib/three.min.js"></script>
+    <script src="lib/controls/OrbitControls.js"></script>
+    <script src="https://threejs.org/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://threejs.org/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://threejs.org/examples/js/postprocessing/MaskPass.js"></script>
+    <script src="https://threejs.org/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://threejs.org/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://threejs.org/examples/js/shaders/FXAAShader.js"></script>
+    <script src="https://threejs.org/examples/js/shaders/ConvolutionShader.js"></script>
+    <script src="https://threejs.org/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://threejs.org/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+    <script type="text/javascript">
 		
 		// Default shell for PICO-8 0.1.12
 	
@@ -344,6 +360,9 @@
 		var Module = null;
 		function p8_run_cart()
 		{
+            
+            document.getElementById('threecontainer').style.display = 'block'
+            init();
 			if (p8_is_running) return;
 			p8_is_running = true;
 	
@@ -478,8 +497,14 @@
 	</script>
 	<script src="pico8-messenger.js"></script>
 	<script src="pico8-gpio-listener.js"></script>
-	<STYLE TYPE="text/css">
-	<!--
+    <style TYPE="text/css">	
+    body{
+        background-color:#111;
+    }
+
+    #canvasin{
+        width: 256px;
+    }
 	.p8_menu_button{
 		opacity:0.3;
 		padding:4px;
@@ -507,7 +532,6 @@
 		image-rendering: pixelated;
 		-ms-interpolation-mode: nearest-neighbor;
 		border: 0px;
-		cursor: none;
 	}
 	
 	
@@ -531,21 +555,31 @@
 		stroke: #909090;
 		stroke-opacity:0.7;
 		fill:none;
-	}
+	}	
+	</style>
 	
-	-->
-	</STYLE>
-	
-	</head>
-	
-	<body style="padding:0px; margin:0px; background-color:#222; color:#ccc">
-
-	
-	
-	
+</head>
+<body>
+    <canvas class="emscripten" id="canvas" width="192" height="64"></canvas>
+    <canvas id="game0" width="64" width="64" ></canvas>
+    <canvas id="game1" width="64" width="64"></canvas>
+    <canvas id="game2" width="64" width="64"></canvas>
+    <canvas id="game3" width="64" width="64"></canvas>
+    <canvas id="game4" width="64" width="64"></canvas>
+    <canvas id="game5" width="64" width="64"></canvas>
+    <div id="threecontainer" class="threecontainer" style="display: none;"></div>
+    <div class="buttoncontainer" style="display: none;">
+        <span id="toggle" class="button noselect">stop</span>
+        <span id="step" class="button noselect">step <span id="count">10000</span></span>
+        <div id="clear" class="button noselect">clear</div>
+        <span id="random" class="button noselect">random</span>
+    </div>
+    
+    
+    	
 	<div style="margin:0px"> <!-- optional div to limit size -->
 		
-		<canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault();" width="192" height="64"></canvas>
+		
 	<div id="p8_frame" style="display:flex; margin:0px;">
 	
 	
@@ -567,7 +601,7 @@
 				</div>
 	
 				<div style="display:flex; position:relative">
-					<canvas class="emscripten" id="canvasin" oncontextmenu="event.preventDefault();"  width="128" height="128"></canvas>
+					<canvas class="emscripten" id="canvasin"  width="128" height="128" style="width: 256px;height:256px;"></canvas>
 					
 					
 					<div id="menu_buttons" style="width:0px; height:164px">
@@ -604,6 +638,9 @@
 	
 	</div> <!-- size limit -->
 	
+    <script src="js/game.js"></script>
+    <script src="js/custom.js"></script>
+    
 	<script type="text/javascript">
 		var playerx = 0;
 		p8_update_layout();
@@ -645,8 +682,13 @@
 				var cout = coutEl.getContext('2d');
 				var ctx = cout;
 				var osc = new OffscreenCanvas(64,64);
-				var oscc = osc.getContext('2d');
-
+                var oscc = osc.getContext('2d');
+                var gctx = [];
+                for (let i=0; i< 6; i++){
+                    const canvas = document.getElementById('game' + i);
+                    const gcontext = canvas.getContext('2d');
+                    gctx.push(gcontext);
+                }
 			
 				// ctx.putImageData(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight);
 				// void ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
@@ -755,17 +797,22 @@
 					// draw bottom
 					// void ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
 					c.drawImage(v,0,64,128,64,64,0,128,64);
-				
+                
+                    gctx[2].save()
+                    gctx[2].translate(-32,-32);
+                    gctx[2].rotate((Math.PI / 180) * 90);
+                    gctx[2].translate(64 + -32,-32 + -32 + -32 );
+
+                    gctx[2].drawImage(coutEl,0,0)
+                    gctx[2].restore()
+                    gctx[4].drawImage(coutEl,64,0,64,64,0,0,64,64)
+                    gctx[0].drawImage(coutEl,128,0,64,64,0,0,64,64)
+
 	
 					setTimeout(draw,20,v,c);
 				}
 	});
 	</script>
-	
-	<!-- uncomment this if you want clipboard access
-		<textarea id="codo_textarea" class="emscripten" style="position:absolute; left:-9999px;"></textarea>	
-	-->
-	
-	</body></html>
-	
-	
+    
+</body>
+</html>
