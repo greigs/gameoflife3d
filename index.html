@@ -574,15 +574,10 @@
         <div id="clear" class="button noselect">clear</div>
         <span id="random" class="button noselect">random</span>
     </div>
-    
-    
     	
-	<div style="margin:0px"> <!-- optional div to limit size -->
-		
+	<div style="margin:0px"> <!-- optional div to limit size -->	
 		
 	<div id="p8_frame" style="display:flex; margin:0px;">
-	
-	
 		<div id="p8_container"
 			style="margin:0px; display:table;"
 			onclick="p8_create_audio_context(); p8_run_cart();">
@@ -668,151 +663,154 @@
 		}
 	
 		var gpio = getP8Gpio();
-	var unsubscribe = gpio.subscribe(function(indices) {
-		playerx = readFromGpioUnsigned(gpio,4, 8)
-		//console.log(playerx)
-	  
-	});
+		var unsubscribe = gpio.subscribe(function(indices) {
+			playerx = readFromGpioUnsigned(gpio,4, 8)
+
+			cube.rotation.y = (64 - playerx - 4) / 128
+			//cube.rotation.z = (64 - playerx) / 64
+
+			//console.log(playerx)
+		
+		});
 		
 	
-	document.addEventListener('DOMContentLoaded',function (){
-				var cinEl = document.getElementById('canvasin');
-				
-				var coutEl = document.getElementById('canvas');
-				var cout = coutEl.getContext('2d');
-				var ctx = cout;
-				var osc = new OffscreenCanvas(64,64);
-                var oscc = osc.getContext('2d');
-                var gctx = [];
-                for (let i=0; i< 6; i++){
-                    const canvas = document.getElementById('game' + i);
-                    const gcontext = canvas.getContext('2d');
-                    gctx.push(gcontext);
-                }
+		document.addEventListener('DOMContentLoaded',function (){
+			var cinEl = document.getElementById('canvasin');
 			
-				// ctx.putImageData(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight);
+			var coutEl = document.getElementById('canvas');
+			var cout = coutEl.getContext('2d');
+			var ctx = cout;
+			var osc = new OffscreenCanvas(64,64);
+			var oscc = osc.getContext('2d');
+			var gctx = [];
+			for (let i=0; i< 6; i++){
+				const canvas = document.getElementById('game' + i);
+				const gcontext = canvas.getContext('2d');
+				gctx.push(gcontext);
+			}
+		
+			// ctx.putImageData(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight);
+			// void ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+
+			function define(part) {
+				//ctx.save();
+				oscc.translate(part.x, part.y);
+				oscc.beginPath();
+				var point = part.points[0];
+				oscc.moveTo(point.x, point.y);
+				for (var i = 0; i < part.points.length; i++) {
+					var point = part.points[i];
+					oscc.lineTo(point.x, point.y);
+				}
+				oscc.closePath();
+				//ctx.restore();
+			}
+
+
+			draw(cinEl,cout);
+
+
+			tx = -64;
+			ty = -64;
+
+			function draw(v,c) {
+				//c.clearRect(0,0,64,64);
+				var midpointx = 128 - playerx;
+				//console.log(midpointx);
+				var parts = [];
+				var cx = midpointx;
+				var cy = 64;
+				var w = 128;
+				var h = 64;
+
+				// left screen triangle
+				parts.push({
+					x: 0,
+					y: 0,
+					points: [{
+						x: 0,
+						y: 0
+					},
+					{
+						x: cx - 64,
+						y: 0
+					},
+					{
+						x: 64,
+						y: 64
+					}, {
+						x: 0,
+						y: 128
+					}]
+				});
+
+				// right screen triangle
+				parts.push({
+					x: 0,
+					y: 0,
+					points: [{
+						x: 64,
+						y: 64
+					}, {
+						x: 64 - cx,
+						y: 0
+					},
+					{
+						x: 128,
+						y: 0
+					},	
+					{
+						x: 128,
+						y: 64
+					}]
+				});
+
+
+				
+				// draw rotated right triangle
+				oscc.save();
+				oscc.translate(-1 * window.tx, -1 * window.ty);
+				oscc.rotate((Math.PI / 180) * -90);
+				oscc.translate(window.tx, window.ty);	
+				var part = parts[1];
+				define(part);
+				oscc.clip();
+				oscc.drawImage(v, part.x, part.y);
+				oscc.restore();
+				
+				// draw left triangle
+				oscc.save();
+				var part = parts[0];
+				define(part);				
+				oscc.clip();
+				oscc.drawImage(v, part.x, part.y, 64, 64, 0, 0, 64, 64);		
+				oscc.restore();
+
+				c.save();
+				c.translate(-32,-32);
+				c.rotate((Math.PI / 180) * -90	);
+				c.translate(-32 - 32 - 32, 32);
+				c.drawImage(osc, 0, 0);
+				c.restore();
+
+				// draw bottom
 				// void ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
-	
-				function define(part) {
-					//ctx.save();
-					oscc.translate(part.x, part.y);
-					oscc.beginPath();
-					var point = part.points[0];
-					oscc.moveTo(point.x, point.y);
-					for (var i = 0; i < part.points.length; i++) {
-						var point = part.points[i];
-						oscc.lineTo(point.x, point.y);
-					}
-					oscc.closePath();
-					//ctx.restore();
-				}
-	
-	
-				draw(cinEl,cout);
-	
-	
-				tx = -64;
-				ty = -64;
-	
-				function draw(v,c) {
-					//c.clearRect(0,0,64,64);
-					var midpointx = 128 - playerx;
-					//console.log(midpointx);
-					var parts = [];
-					var cx = midpointx;
-					var cy = 64;
-					var w = 128;
-					var h = 64;
-	
-					// left screen triangle
-					parts.push({
-						x: 0,
-						y: 0,
-						points: [{
-							x: 0,
-							y: 0
-						},
-						{
-							x: cx - 64,
-							y: 0
-						},
-						{
-							x: 64,
-							y: 64
-						}, {
-							x: 0,
-							y: 128
-						}]
-					});
-	
-					// right screen triangle
-					parts.push({
-						x: 0,
-						y: 0,
-						points: [{
-							x: 64,
-							y: 64
-						}, {
-							x: 64,
-							y: 0
-						},
-						{
-							x: 128,
-							y: 0
-						},	
-						{
-							x: 128,
-							y: 64
-						}]
-					});
-	
-	
-					
-					// draw rotated right triangle
-					oscc.save();
-					oscc.translate(-1 * window.tx, -1 * window.ty);
-					oscc.rotate((Math.PI / 180) * -90);
-					oscc.translate(window.tx, window.ty);
-					var part = parts[1];
-					define(part);
-					oscc.clip();
-					oscc.drawImage(v, part.x, part.y);
-					oscc.restore();
-					
-					// draw left triangle
-					oscc.save();
-					var part = parts[0];
-					define(part);				
-					oscc.clip();
-					oscc.drawImage(v, part.x, part.y, 64, 64, 0, 0, 64, 64);		
-					oscc.restore();
-	
-					c.save();
-					c.translate(-32,-32);
-					c.rotate((Math.PI / 180) * -90	);
-					c.translate(-32 - 32 - 32, 32);
-					c.drawImage(osc, 0, 0);
-					c.restore();
+				c.drawImage(v,0,64,128,64,64,0,128,64);
+			
+				gctx[2].save()
+				gctx[2].translate(-32,-32);
+				gctx[2].rotate((Math.PI / 180) * 90);
+				gctx[2].translate(64 + -32,-32 + -32 + -32 );
 
-					// draw bottom
-					// void ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
-					c.drawImage(v,0,64,128,64,64,0,128,64);
-                
-                    gctx[2].save()
-                    gctx[2].translate(-32,-32);
-                    gctx[2].rotate((Math.PI / 180) * 90);
-                    gctx[2].translate(64 + -32,-32 + -32 + -32 );
+				gctx[2].drawImage(coutEl,0,0)
+				gctx[2].restore()
+				gctx[4].drawImage(coutEl,64,0,64,64,0,0,64,64)
+				gctx[0].drawImage(coutEl,128,0,64,64,0,0,64,64)
 
-                    gctx[2].drawImage(coutEl,0,0)
-                    gctx[2].restore()
-                    gctx[4].drawImage(coutEl,64,0,64,64,0,0,64,64)
-                    gctx[0].drawImage(coutEl,128,0,64,64,0,0,64,64)
 
-	
-					setTimeout(draw,20,v,c);
-				}
-	});
+				setTimeout(draw,20,v,c);
+			}
+		});
 	</script>
-    
 </body>
 </html>

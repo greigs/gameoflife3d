@@ -158,7 +158,7 @@ function init(){
         cubeMaterials.push(cubematerial)
     }
     const cubegeometry = new THREE.BoxGeometry(90,90,90);
-    var cube = new THREE.Mesh(cubegeometry, cubeMaterials);
+    window.cube = new THREE.Mesh(cubegeometry, cubeMaterials);
    
     const ambientlight = new THREE.AmbientLight(0x404040, 2);
     const light = new THREE.PointLight( 0xffffff, 2 );
