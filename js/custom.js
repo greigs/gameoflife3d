@@ -12,6 +12,48 @@ function toggleInfo(){
     }
 };
 
+function drawMask(){
+    function drawCheckeredBackground(can, nRow, nCol) {
+
+        var ctx = can.getContext("2d");
+        var w = 256;
+        var h = 256;
+    
+        nRow = nRow || 128;    // default number of rows
+        nCol = nCol || 128;    // default number of columns
+    
+        w /= nCol;            // width of a block
+        h /= nRow;            // height of a block
+    
+    
+        
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0,0,256,256);
+        
+        ctx.fillStyle = "#000000";
+    
+        for (var i = 0; i < nRow; ++i) {
+            if (i % 2 === 0){
+              for (var j = 0, col = nCol; j < col; j++) {
+                  ctx.rect(1 * j * w - 1, i * h - 1, w, h);
+              }        
+            }
+            else{
+              for (var j = 0, col = nCol / 2; j < col; j++) {
+                  ctx.rect(2 * j * w - 1, i * h - 1, w, h);
+              }
+            }
+        }
+        
+        ctx.fill();
+    }
+    
+    const cv = new OffscreenCanvas(256,256);
+    
+    drawCheckeredBackground(cv);
+    return cv;
+}
+
 function init(){
     const fps = 10;
     var now;
@@ -97,17 +139,25 @@ function init(){
 
     const cubeMaterials = []
     const textures = []
+    var alphaMaskCanvas = drawMask();
     for (let i=0; i< adjacencyInfo.length; i++){
         const canvas = document.getElementById('game' + i);
         const texture = new THREE.Texture(canvas);
+        const alphaMap = new THREE.CanvasTexture(alphaMaskCanvas);
+        //alphaMap.magFilter = THREE.NearestFilter;
+        texture.magFilter = THREE.NearestFilter;
         textures.push(texture)
-        const cubematerial = new THREE.MeshLambertMaterial({
+        //const cubematerial = new THREE.MeshLambertMaterial({
+        const cubematerial = new THREE.MeshBasicMaterial({            
             color:0xFFFFFF,
-            map:texture
+            map:texture,
+            transparent: true
+            
         });
+        cubematerial.alphaMap = alphaMap;
         cubeMaterials.push(cubematerial)
     }
-    const cubegeometry = new THREE.BoxGeometry(70,70,70);
+    const cubegeometry = new THREE.BoxGeometry(90,90,90);
     var cube = new THREE.Mesh(cubegeometry, cubeMaterials);
    
     const ambientlight = new THREE.AmbientLight(0x404040, 2);
@@ -119,13 +169,12 @@ function init(){
     scene.add(cube);
     scene.add(light);
     scene.add(ambientlight);
-
-
+5
     renderScene = new THREE.RenderPass(scene, camera);
 
-    const bloomStrength = 0;
-    const bloomRadius = 0.8;
-    const bloomThreshold = 0.3;
+    const bloomStrength = 1.6;
+    const bloomRadius = 0.2;
+    const bloomThreshold = 0.01;
     
 	const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), bloomStrength, bloomRadius, bloomThreshold);
     composer = new THREE.EffectComposer(renderer);
