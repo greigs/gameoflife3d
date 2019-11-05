@@ -666,7 +666,7 @@
 		var unsubscribe = gpio.subscribe(function(indices) {
 			playerx = readFromGpioUnsigned(gpio,4, 8)
 
-			cube.rotation.y = (64 - playerx - 4) / 128
+			cube.rotation.y = (64 - playerx) / 128
 			//cube.rotation.z = (64 - playerx) / 64
 
 			//console.log(playerx)
@@ -712,10 +712,10 @@
 
 			tx = -64;
 			ty = -64;
-
+			const playerMidpointOffset = 4;
 			function draw(v,c) {
 				//c.clearRect(0,0,64,64);
-				var midpointx = 128 - playerx;
+				var midpointx = 128 - (playerx + playerMidpointOffset);
 				//console.log(midpointx);
 				var parts = [];
 				var cx = midpointx;
