@@ -393,7 +393,7 @@
 	
 			}
 			e.type = "application/javascript";
-			e.src = "celeste.js";
+			e.src = "fuz.js";
 			e.id = "e_script";
 			
 			document.body.appendChild(e); // load and run
@@ -637,7 +637,7 @@
     <script src="js/custom.js"></script>
     
 	<script type="text/javascript">
-		var playerx = 0;
+		var side = 0;
 		p8_update_layout();
 		p8_update_button_icons();
 	
@@ -664,9 +664,9 @@
 	
 		var gpio = getP8Gpio();
 		var unsubscribe = gpio.subscribe(function(indices) {
-			playerx = readFromGpioUnsigned(gpio,4, 8)
+			side = readFromGpioUnsigned(gpio,4, 8)
 
-			cube.rotation.y = (64 - playerx) / 128
+			//cube.rotation.y = (64 - playerx) / 128
 			//cube.rotation.z = (64 - playerx) / 64
 
 			//console.log(playerx)
@@ -715,97 +715,25 @@
 			var playerMidpointOffset = 4;
 			function draw(v,c) {
 				//c.clearRect(0,0,64,64);
-				var midpointx = 128 - (playerx + playerMidpointOffset);
-				//console.log(midpointx);
-				var parts = [];
-				var cx = midpointx;
-				var cy = 64;
-				var w = 128;
-				var h = 64;
-
-				// left screen triangle
-				parts.push({
-					x: 0,
-					y: 0,
-					points: [{
-						x: 0,
-						y: 0
-					},
-					{
-						x: cx - 64,
-						y: 0
-					},
-					{
-						x: 64,
-						y: 64
-					}, {
-						x: 0,
-						y: 128
-					}]
-				});
-
-				// right screen triangle
-				parts.push({
-					x: 0,
-					y: 0,
-					points: [{
-						x: 64,
-						y: 64
-					}, {
-						x: 64 - cx,
-						y: 0
-					},
-					{
-						x: 128,
-						y: 0
-					},	
-					{
-						x: 128,
-						y: 64
-					}]
-				});
-
-
-				
-				// draw rotated right triangle
-				oscc.save();
-				oscc.translate(-1 * window.tx, -1 * window.ty);
-				oscc.rotate((Math.PI / 180) * -90);
-				oscc.translate(window.tx, window.ty);	
-				var part = parts[1];
-				define(part);
-				oscc.clip();
-				oscc.drawImage(v, part.x, part.y);
-				oscc.restore();
-				
-				// draw left triangle
-				oscc.save();
-				var part = parts[0];
-				define(part);				
-				oscc.clip();
-				oscc.drawImage(v, part.x, part.y, 64, 64, 0, 0, 64, 64);		
-				oscc.restore();
-
-				c.save();
-				c.translate(-32,-32);
-				c.rotate((Math.PI / 180) * -90	);
-				c.translate(-32 - 32 - 32, 32);
-				c.drawImage(osc, 0, 0);
-				c.restore();
-
+			
 				// draw bottom
 				// void ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
-				c.drawImage(v,0,64,128,64,64,0,128,64);
+				c.drawImage(v,-32,64-32,128,64,64,0,128,64);
 			
-				gctx[2].save()
-				gctx[2].translate(-32,-32);
-				gctx[2].rotate((Math.PI / 180) * 90);
-				gctx[2].translate(64 + -32,-32 + -32 + -32 );
+				console.log(side)
+				let rside = side
+				if (side === 1){
+					rside = 4
+				}
+				if (side === 2){
+					rside = 1
+				}
+				if (side === 3){
+					rside = 5
+				}
 
-				gctx[2].drawImage(coutEl,0,0)
-				gctx[2].restore()
-				gctx[4].drawImage(coutEl,64,0,64,64,0,0,64,64)
-				gctx[0].drawImage(coutEl,128,0,64,64,0,0,64,64)
+				//gctx[4].drawImage(coutEl,64,0,64,64,0,0,64,64)
+				gctx[rside].drawImage(coutEl,128,0,64,64,0,0,64,64)
 
 
 				setTimeout(draw,20,v,c);
