@@ -638,6 +638,11 @@
     
 	<script type="text/javascript">
 		var side = 0;
+		var playerx = 0;
+		var playery = 0;
+		var playerz = 0;
+		var rotationTarget = 0;
+		var rotating = false;
 		p8_update_layout();
 		p8_update_button_icons();
 	
@@ -645,7 +650,7 @@
 		Module = {};
 		Module.canvas = canvasin;
 		var canvas = document.getElementById("canvas");
-	
+	    var cube2 = false;
 		// from @ultrabrite's shell: test if an AudioContext can be created outside of an event callback.
 		// If it can't be created, then require pressing the start button to run the cartridge
 	
@@ -664,9 +669,34 @@
 	
 		var gpio = getP8Gpio();
 		var unsubscribe = gpio.subscribe(function(indices) {
-			side = readFromGpioUnsigned(gpio,4, 8)
-
-			//cube.rotation.y = (64 - playerx) / 128
+			var newside = readFromGpioUnsigned(gpio,4, 8)
+			playerx = readFromGpioUnsigned(gpio,12, 8);
+			playery = readFromGpioUnsigned(gpio,20, 8);
+			playerz = readFromGpioUnsigned(gpio,28, 8);
+			var ninety = ((90) * (Math.PI/180))
+			//console.log("side:" + side + " " + playerx + " " + playery + " " + playerz);
+			cube2 = cube;
+			//cube.rotation.y = ((side * 90) * (Math.PI/180))
+		    if (!rotating && side != newside){
+				rotating = true
+				if (newside == 3 && side == 0){
+					rotationTarget -= ninety
+					console.log('target:' +rotationTarget)
+				}
+				else if (newside == 0 && side == 3){
+					rotationTarget += ninety
+					console.log('target:' +rotationTarget)
+				}
+				else if (newside < side ){
+				    rotationTarget -= ninety
+					console.log('target:' +rotationTarget)
+				}
+				else if (newside > side){
+					rotationTarget += ninety
+					console.log('target:' +rotationTarget)
+				}
+				side = newside
+			}
 			//cube.rotation.z = (64 - playerx) / 64
 
 			//console.log(playerx)
@@ -715,12 +745,32 @@
 			var playerMidpointOffset = 4;
 			function draw(v,c) {
 				//c.clearRect(0,0,64,64);
-			
+				var oneDegree = ((1) * (Math.PI/180));
+			    if (cube2){
+				
+					if (cube2.rotation.y < (rotationTarget - oneDegree))
+					{
+						cube2.rotation.y += ((18) * (Math.PI/180));
+					}
+					else if (cube2.rotation.y >  (rotationTarget + oneDegree))
+					{
+						cube2.rotation.y -= ((18) * (Math.PI/180));
+					}
+					else(
+						rotating = false
+					)
+				}
+
 				// draw bottom
 				// void ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
-				c.drawImage(v,-32,64-32,128,64,64,0,128,64);
+				var y = 64 + 32 - 4 - playerz;
+				if (y > 64){
+					y = 64;
+				}
+				//console.log(y)
+				c.drawImage(v,-32,y,128,64,64,0,128,64);
 			
-				console.log(side)
+				//console.log(side)
 				let rside = side
 				if (side === 1){
 					rside = 4
