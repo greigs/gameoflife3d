@@ -643,6 +643,8 @@
 		var playerz = 0;
 		var rotationTarget = 0;
 		var rotating = false;
+		var displayedside = 0;
+		var displayedsideDifferentCount = 0;
 		p8_update_layout();
 		p8_update_button_icons();
 	
@@ -743,6 +745,11 @@
 			tx = -64;
 			ty = -64;
 			var playerMidpointOffset = 4;
+
+			const easeIn  = p => t => Math.pow(t, p);
+			const easeOut = p => t => (1 - Math.abs(Math.pow(t-1, p)));
+			const easeInOut = p => t => t<.5 ? easeIn(p)(t*2)/2 : easeOut(p)(t*2 - 1)/2+0.5;
+
 			function draw(v,c) {
 				//c.clearRect(0,0,64,64);
 				var oneDegree = ((1) * (Math.PI/180));
@@ -750,11 +757,11 @@
 				
 					if (cube2.rotation.y < (rotationTarget - oneDegree))
 					{
-						cube2.rotation.y += ((18) * (Math.PI/180));
+						cube2.rotation.y += ((2) * (Math.PI/180));
 					}
 					else if (cube2.rotation.y >  (rotationTarget + oneDegree))
 					{
-						cube2.rotation.y -= ((18) * (Math.PI/180));
+						cube2.rotation.y -= ((2) * (Math.PI/180));
 					}
 					else(
 						rotating = false
@@ -771,19 +778,28 @@
 				c.drawImage(v,-32,y,128,64,64,0,128,64);
 			
 				//console.log(side)
-				let rside = side
-				if (side === 1){
-					rside = 4
-				}
-				if (side === 2){
-					rside = 1
-				}
-				if (side === 3){
-					rside = 5
-				}
+				let mappedSide = 0;
+				if (displayedside != side){
+					displayedsideDifferentCount++;
+					if (displayedsideDifferentCount > 30){
+						displayedside = side
 
+						displayedsideDifferentCount = 0;
+					}
+				}
+				mappedSide = displayedside
+				if (displayedside === 1){
+					mappedSide = 4
+				}
+				if (displayedside === 2){
+					mappedSide = 1
+				}
+				if (displayedside === 3){
+					mappedSide = 5
+				}
+				
 				//gctx[4].drawImage(coutEl,64,0,64,64,0,0,64,64)
-				gctx[rside].drawImage(coutEl,128,0,64,64,0,0,64,64)
+				gctx[mappedSide].drawImage(coutEl,128,0,64,64,0,0,64,64)
 
 
 				setTimeout(draw,20,v,c);
