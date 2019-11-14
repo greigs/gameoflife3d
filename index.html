@@ -645,6 +645,7 @@
 		var rotating = false;
 		var displayedside = 0;
 		var displayedsideDifferentCount = 0;
+		var drawCount = 0;
 		p8_update_layout();
 		p8_update_button_icons();
 	
@@ -752,16 +753,17 @@
 
 			function draw(v,c) {
 				//c.clearRect(0,0,64,64);
+				drawCount++;
 				var oneDegree = ((1) * (Math.PI/180));
-			    if (cube2){
+			    if (cube2 && drawCount % 1 == 0){
 				
 					if (cube2.rotation.y < (rotationTarget - oneDegree))
 					{
-						cube2.rotation.y += ((2) * (Math.PI/180));
+						cube2.rotation.y += ((3 * 0.2) * (Math.PI/180));
 					}
 					else if (cube2.rotation.y >  (rotationTarget + oneDegree))
 					{
-						cube2.rotation.y -= ((2) * (Math.PI/180));
+						cube2.rotation.y -= ((3 * 0.2) * (Math.PI/180));
 					}
 					else(
 						rotating = false
@@ -781,7 +783,7 @@
 				let mappedSide = 0;
 				if (displayedside != side){
 					displayedsideDifferentCount++;
-					if (displayedsideDifferentCount > 30){
+					if (displayedsideDifferentCount > 72){
 						displayedside = side
 
 						displayedsideDifferentCount = 0;
