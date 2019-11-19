@@ -681,6 +681,24 @@
 			cube2 = cube;
 			//cube.rotation.y = ((side * 90) * (Math.PI/180))
 		    if (!rotating && side != newside){
+				if (!rotating){
+					if (newside === 0 && side === 3){
+						console.log('LEFT')
+						motorLeft()
+					}
+					else if (newside === 3 && side === 0){
+						console.log('RIGHT')
+						motorRight()
+					}
+					else if (newside < side){
+						console.log('RIGHT')
+						motorRight()
+					}
+					else{
+						console.log('LEFT')
+						motorLeft()
+					}
+				}
 				rotating = true
 				if (newside == 3 && side == 0){
 					rotationTarget -= ninety
@@ -705,7 +723,40 @@
 			//console.log(playerx)
 		
 		});
+		let directionRight = false;
+		const motorRight = () => {
+			directionRight = true;
+			fetch('http://motor1.local/switch/gpio2/toggle', {
+				method: 'POST', // or 'PUT'
+				body: '', // data can be `string` or {object}!
+				mode: 'no-cors',
+				headers: {
+				'Content-Type': 'application/json'
+				}
+			})
+		}
+
+		const motorLeft = () => {
+			directionRight = false;
+			fetch('http://motor1.local/switch/gpio0/toggle', {
+				method: 'POST', // or 'PUT'
+				body: '', // data can be `string` or {object}!
+				mode: 'no-cors',
+				headers: {
+				'Content-Type': 'application/json'
+				}
+			})
+		}	
+
+		const motorStop = () => {
+			if (directionRight){
+				motorRight()
+			}
+			else{
+				motorLeft()
+			}
 		
+		}
 	
 		document.addEventListener('DOMContentLoaded',function (){
 			var cinEl = document.getElementById('canvasin');
@@ -759,15 +810,19 @@
 				
 					if (cube2.rotation.y < (rotationTarget - oneDegree))
 					{
-						cube2.rotation.y += ((3 * 0.2) * (Math.PI/180));
+						cube2.rotation.y += ((2) * (Math.PI/180));
 					}
 					else if (cube2.rotation.y >  (rotationTarget + oneDegree))
 					{
-						cube2.rotation.y -= ((3 * 0.2) * (Math.PI/180));
+						cube2.rotation.y -= ((2) * (Math.PI/180));
 					}
-					else(
+					else{
+						if (rotating){
+							console.log('STOP')
+							motorStop()
+						}
 						rotating = false
-					)
+					}
 				}
 
 				// draw bottom
@@ -783,7 +838,7 @@
 				let mappedSide = 0;
 				if (displayedside != side){
 					displayedsideDifferentCount++;
-					if (displayedsideDifferentCount > 72){
+					if (displayedsideDifferentCount > 32){
 						displayedside = side
 
 						displayedsideDifferentCount = 0;
