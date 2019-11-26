@@ -50,7 +50,7 @@
 		// Otherwise, PICO-8 will create its own one
 		var pico8_audio_context;
 	
-		
+		var cube2rotation = 0;
 	
 		p8_gfx_dat={
 				"p8b_pause1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAOUlEQVRIx2NgGPbg/8cX/0F46FtAM4vobgHVLRowC6hm0YBbQLFFoxaM4FQ0dHPy0C1Nh26NNugBAAnizNiMfvbGAAAAAElFTkSuQmCC",
@@ -361,7 +361,7 @@
 		function p8_run_cart()
 		{
             
-            document.getElementById('threecontainer').style.display = 'block'
+            
             init();
 			if (p8_is_running) return;
 			p8_is_running = true;
@@ -567,7 +567,7 @@
     <canvas id="game3" width="64" width="64"></canvas>
     <canvas id="game4" width="64" width="64"></canvas>
     <canvas id="game5" width="64" width="64"></canvas>
-    <div id="threecontainer" class="threecontainer" style="display: none;"></div>
+    
     <div class="buttoncontainer" style="display: none;">
         <span id="toggle" class="button noselect">stop</span>
         <span id="step" class="button noselect">step <span id="count">10000</span></span>
@@ -678,7 +678,6 @@
 			playerz = readFromGpioUnsigned(gpio,28, 8);
 			var ninety = ((90) * (Math.PI/180))
 			//console.log("side:" + side + " " + playerx + " " + playery + " " + playerz);
-			cube2 = cube;
 			//cube.rotation.y = ((side * 90) * (Math.PI/180))
 		    if (!rotating && side != newside){
 				if (!rotating){
@@ -806,15 +805,15 @@
 				//c.clearRect(0,0,64,64);
 				drawCount++;
 				var oneDegree = ((1) * (Math.PI/180));
-			    if (cube2 && drawCount % 1 == 0){
+			    if (drawCount % 1 == 0){
 				
-					if (cube2.rotation.y < (rotationTarget - oneDegree))
+					if (cube2rotation < (rotationTarget - oneDegree))
 					{
-						cube2.rotation.y += ((2) * (Math.PI/180));
+						cube2rotation += ((2) * (Math.PI/180));
 					}
-					else if (cube2.rotation.y >  (rotationTarget + oneDegree))
+					else if (cube2rotation >  (rotationTarget + oneDegree))
 					{
-						cube2.rotation.y -= ((2) * (Math.PI/180));
+						cube2rotation -= ((2) * (Math.PI/180));
 					}
 					else{
 						if (rotating){
