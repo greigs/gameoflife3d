@@ -1073,7 +1073,7 @@ var ASM_CONSTS = [ function() {
 }, function() {
  return document.hidden ? 1 : 0;
 }, function() {
- if (typeof codo_key_buffer === "undefined") codo_key_buffer = [];
+ if (typeof codo_key_buffer === "undefined") {codo_key_buffer = [];  window.codo_key_buffer = codo_key_buffer}
  document.addEventListener("keydown", function(e) {
   var val = -1;
   if (e.key.length == 1) {
@@ -1086,7 +1086,7 @@ var ASM_CONSTS = [ function() {
    if (val == -1) {}
   }
   var el = document.getElementById("codo_textarea");
-  codo_key_buffer.push(val);
+  //codo_key_buffer.push(val);
  });
 }, function() {
 }, function() {
@@ -1134,10 +1134,10 @@ var ASM_CONSTS = [ function() {
   }
  }
 }, function() {
- if (typeof codo_key_buffer === "undefined") codo_key_buffer = [];
+ if (typeof codo_key_buffer === "undefined") {codo_key_buffer = []; window.codo_key_buffer = codo_key_buffer}
  return codo_key_buffer.length > 0 ? 1 : 0;
 }, function() {
- if (typeof codo_key_buffer === "undefined") codo_key_buffer = [];
+ if (typeof codo_key_buffer === "undefined") {codo_key_buffer = []; window.codo_key_buffer = codo_key_buffer}
  return codo_key_buffer.shift() | 0;
 }, function() {
  temp = typeof codo_wheel_dx !== "undefined" ? codo_wheel_dx : 0;
@@ -5771,6 +5771,10 @@ var SDL = {
   case "keydown":
   case "keyup":
    {
+    window.ptr = ptr;
+    window.HEAP32 = HEAP32;
+    window.HEAP8 = HEAP8;
+    window.HEAL16 = HEAP16;
     var down = event.type === "keydown";
     var key = SDL.lookupKeyCodeForEvent(event);
     var scan;
@@ -5779,6 +5783,8 @@ var SDL = {
     } else {
      scan = SDL.scanCodes[key] || key;
     }
+    //console.log(key + ' ' + scan)
+
     HEAP32[ptr >> 2] = SDL.DOMEventToSDLEvent[event.type];
     HEAP8[ptr + 8 >> 0] = down ? 1 : 0;
     HEAP8[ptr + 9 >> 0] = 0;

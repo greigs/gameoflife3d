@@ -82,3 +82,61 @@ function init(){
 };
 
 
+var ws;
+var prevGesture = '';
+
+ws = new WebSocket("ws://localhost:6437/v6.json");
+ws.onopen = function(event) {
+    var enableMessage = JSON.stringify({enableGestures: true});
+    ws.send(enableMessage); // Enable gestures
+    ws.send(JSON.stringify({focused: true})); // claim focus
+
+};
+
+ws.onmessage = function(event) {
+    
+        var obj = JSON.parse(event.data);
+        // var str = JSON.stringify(obj, undefined, 2);
+        //document.getElementById("output").innerHTML = '<pre>' + str + '</pre>';
+        // if (pauseOnGesture && obj.gestures.length > 0) {
+        //     togglePause();
+        // }
+        if (obj.gestures.length){
+            var gesture = obj.gestures[0].type + ' ' + (obj.gestures[0].direction[0] > 0.0 ? 'right' : 'left')
+            if (prevGesture !== gesture)
+            {
+/*
+    HEAP32[ptr >> 2] = SDL.DOMEventToSDLEvent[event.type];
+    HEAP8[ptr + 8 >> 0] = down ? 1 : 0;
+    HEAP8[ptr + 9 >> 0] = 0;
+    HEAP32[ptr + 12 >> 2] = scan;
+    HEAP32[ptr + 16 >> 2] = key;
+    HEAP16[ptr + 20 >> 1] = SDL.modState;
+    HEAP32[ptr + 24 >> 2] = event.keypressCharCode || key;
+
+      120: 27,
+  122: 29,
+*/
+                window.HEAP32[window.ptr >> 2] = 768;
+                window.HEAP8[window.ptr + 8 >> 0] = 1;
+                window.HEAP8[window.ptr + 9 >> 0] = 0;
+                window.HEAP32[window.ptr + 12 >> 2] = 27;
+                window.HEAP32[window.ptr + 16 >> 2] = 120;
+                //window.HEAP16[ptr + 20 >> 1] = SDL.modState;
+                window.HEAP32[window.ptr + 24 >> 2] = 120;
+                //debugger
+
+             //   window.codo_key_buffer.push(122); //122
+                console.log(gesture)
+            }
+            prevGesture = gesture;
+        }
+        else{
+            if (prevGesture !== ''){
+                console.log('stop')
+            }
+            prevGesture = '';
+        }
+
+    
+};
